@@ -15,8 +15,13 @@ defmodule Ueberauth.Strategy.AzureAD do
     end
   end
 
-  def logout(conn, _token) do
-    redirect!(conn, Client.logout_url())
+  def logout(conn, _token), do: logout(conn)
+  def logout(conn) do
+    if Client.configured? do
+      redirect!(conn, Client.logout_url())
+    else
+      set_errors!(conn, [error("Logout Failed", "Failed to logout, please close your browser")])
+    end
   end
 
   def handle_callback!(
@@ -33,6 +38,7 @@ defmodule Ueberauth.Strategy.AzureAD do
   end
 
   def handle_callback!(conn) do
+    IO.inspect conn
     set_errors!(conn, [error("missing_code", "No code received")])
   end
 

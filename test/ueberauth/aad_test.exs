@@ -6,13 +6,20 @@ defmodule Ueberauth.Strategy.AADTest do
 
   alias Ueberauth.Strategy.AzureAD
 
-  @env_values %{
-    redirect_uri: "https://example.com",
+  @env_values [redirect_uri: "https://example.com",
     client_id: "example_client",
-    tenant: "example_tenant",
-  }
+    tenant: "example_tenant"]
 
   @mock_metadata nil
+
+  @user_claim %{
+    claims: %{
+      "email" => "user@test.com",
+      "given_name" => "John",
+      "family_name" => "Doe",
+      "winaccountname" => "john1"
+    }
+  }
 
   describe "AAD Strategy" do
     setup_with_mocks [
@@ -32,6 +39,7 @@ defmodule Ueberauth.Strategy.AADTest do
       :ok
     end
 
+    # CLIENT
     test "Handles the AAD request" do
       [external: request] = AzureAD.handle_request!(%Plug.Conn{params: %{}})
       assert request =~ 
@@ -49,16 +57,31 @@ defmodule Ueberauth.Strategy.AADTest do
       end
     end
 
-    @tag :skip
+    # LOGOUT
     test "Handles the logout request" do
+      assert AzureAD.logout(nil, nil) =~ 
+      "https://login.microsoftonline.com/example_tenant/oauth2/logout?client_id=example_client"
+      assert AzureAD.logout(nil) =~ 
+      "https://login.microsoftonline.com/example_tenant/oauth2/logout?client_id=example_client"
     end
 
-    @tag :skip
     test "Gives an error upon logout request with missing config" do
+      with_mock Application, [:passthrough], get_env: fn _, _ -> [] end do
+        assert AzureAD.logout(nil) == 
+          [
+            %Ueberauth.Failure.Error{
+              message: "Failed to logout, please close your browser",
+              message_key: "Logout Failed"
+            }
+          ]
+      end
     end
 
-    @tag :skip
+    # CALLBACK
+    @conn %Plug.Conn{params: %{"id_token" => "4321", "code" => "1234"}}
     test "Handle callback from AAD provider, set claims user from JWT" do
+      conn = AzureAD.handle_callback!(@conn)
+      assert conn.private == @user_claim.claims
     end
 
     @tag :skip

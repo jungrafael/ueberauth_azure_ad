@@ -25,24 +25,24 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
 
     id_token
     |> JsonWebToken.verify(opts)
-    |> enforce_ok!
+    |> enforce_ok!("JWT verification failed")
     |> VerifyClaims.verify!(code)
   end
 
-  defp enforce_ok!({:ok, value}) do
-    value
-  end
+  defp enforce_ok!({:ok, value}, _), do: value
+  defp enforce_ok!(_, error), do: raise error
 
   defp get_x5t_from_token!(id_token) do
+    error = "failed to get x5t from token"
     id_token
     # get token header
     |> String.split(".")
     |> List.first
     # decode
     |> Base.url_decode64(padding: false)
-    |> enforce_ok!
+    |> enforce_ok!(error)
     |> JSON.decode
-    |> enforce_ok!
+    |> enforce_ok!(error)
     # get x5t
     |> Map.get("x5t")
   end
@@ -51,7 +51,7 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
     "https://login.microsoftonline.com/common/.well-known/openid-configuration"
     |> http_request!
     |> JSON.decode
-    |> enforce_ok!
+    |> enforce_ok!("failed to retrieve jwks uri")
     |> Map.get("jwks_uri")
   end
 
@@ -65,7 +65,7 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
     url
     |> http_request!
     |> JSON.decode
-    |> enforce_ok!
+    |> enforce_ok!("failed to retrieve discovery keys")
     |> Map.get("keys")
     |> Enum.filter(fn(key) -> key["x5t"] === x5t end)
     |> List.first

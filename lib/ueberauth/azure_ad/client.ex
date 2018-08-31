@@ -32,7 +32,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
 
   defp build_client() do
   	configset = config()
-    redirect_uri = configset.redirect_uri
+    redirect_uri = configset[:redirect_uri]
 
   	Client.new([
       strategy: __MODULE__,
@@ -42,6 +42,14 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
       token_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/token"
     ])
   end
+
+  def configured? do 
+    configset = config() 
+    configset != nil
+    && Keyword.has_key?(configset, :tenant) 
+    && Keyword.has_key?(configset, :client_id) 
+    && Keyword.has_key?(configset, :redirect_uri) 
+  end 
 
   defp config do
     Application.get_env(:ueberauth, Ueberauth.Strategy.AzureAD)
