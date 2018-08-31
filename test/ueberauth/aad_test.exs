@@ -10,7 +10,17 @@ defmodule Ueberauth.Strategy.AADTest do
     client_id: "example_client",
     tenant: "example_tenant"]
 
-  @mock_metadata nil
+  @mock_http_reply %{
+    status_code: 200,
+    body: ~s(
+      {
+        "jwks_uri": "example_jwks_uri",
+        "keys": [
+          {"x5t": "7_Zuf1tvkwLxYaHS3q6lUjUYIGw", "x5c": "[x5c_example]"}
+        ]
+      }
+    )
+  }
 
   @user_claim %{
     claims: %{
@@ -26,7 +36,7 @@ defmodule Ueberauth.Strategy.AADTest do
       {OAuth2.Client, [:passthrough],
        [get_token: fn code, _ -> {:ok, %{token: %{access_token: code}}} end]},
       {Application, [:passthrough], [get_env: fn _, _ -> @env_values end]},
-      {HTTPoison, [:passthrough], [get: fn _, _, _ -> @mock_metadata end]},
+      {HTTPoison, [:passthrough], [get!: fn _ -> @mock_http_reply end]},
       {SecureRandom, [:passthrough], [uuid: fn -> "example_nonce" end]},
       {Ueberauth.Strategy.Helpers, [:passthrough],
        [
@@ -77,10 +87,16 @@ defmodule Ueberauth.Strategy.AADTest do
       end
     end
 
+
+
+    def build_conn do
+      token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IjdfWnVmMXR2a3dMeFlhSFMzcTZsVWpVWUlHdyIsImtpZCI6IjdfWnVmMXR2a3dMeFlhSFMzcTZsVWpVWUlHdyJ9"
+      %Plug.Conn{params: %{"id_token" => token, "code" => "1234"}}
+    end
+
     # CALLBACK
-    @conn %Plug.Conn{params: %{"id_token" => "4321", "code" => "1234"}}
     test "Handle callback from AAD provider, set claims user from JWT" do
-      conn = AzureAD.handle_callback!(@conn)
+      conn = AzureAD.handle_callback!(build_conn())
       assert conn.private == @user_claim.claims
     end
 

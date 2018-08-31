@@ -34,6 +34,7 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
 
   defp get_x5t_from_token!(id_token) do
     error = "failed to get x5t from token"
+
     id_token
     # get token header
     |> String.split(".")
@@ -73,7 +74,6 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
   end
 
   # always use the first x5t value
-  # this is the function I am most worried about. Do the certificates always use this format?
   defp get_public_key([cert | _]) do
     spki =
       "-----BEGIN CERTIFICATE-----\n#{cert}\n-----END CERTIFICATE-----\n"
