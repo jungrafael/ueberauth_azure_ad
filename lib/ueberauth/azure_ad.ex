@@ -2,39 +2,28 @@ defmodule Ueberauth.Strategy.AzureAD do
   @moduledoc """
   """
 
+  use Ueberauth.Strategy
   alias Ueberauth.Strategy.AzureAD.Client
   alias Ueberauth.Strategy.AzureAD.Callback
 
   def handle_request!(conn) do
-    if Client.configured?() do
-      # TODO redirect_to_authorization(conn)
+    if Client.configured? do
+      url = Client.authorize_url!()
+      redirect!(conn, external: url)
     else
       redirect!(conn, "/")
     end
   end
 
-  def logout(conn, token) do
-    logout_url = Client.logout_url(callback_url(conn), token)
-
-    with {:ok, logout_url} <- logout_url do
-      redirect!(conn, logout_url)
-    else
-      _ ->
-        set_errors!(conn, [error("Logout Failed", "Failed to logout, please close your browser")])
-    end
+  def logout(conn, _token) do
+    redirect!(conn, Client.logout_url())
   end
 
-  def handle_callback!(%Plug.Conn{params: %{"code" => code}} = conn) do
-    # TODO use Callback?
-    with {:ok, client} <- OAuth.get_token(code, redirect_uri: callback_url(conn)) do
-      # TODO fetch_user(conn, client)
-    else
-      {:error, %{reason: reason}} ->
-        set_errors!(conn, [error("Authentication Error", reason)])
-
-      {:error, %OAuth2.Response{body: %{"error_description" => reason}}} ->
-        set_errors!(conn, [error("Authentication Error", reason)])
-    end
+  def handle_callback!(
+    %Plug.Conn{params: %{"id_token" => id_token, "code" => code}} = conn
+  ) do
+    claims = Callback.process_callback!(id_token, code)
+    put_private(conn, :aad_user, claims)
   end
 
   def handle_callback!(

@@ -54,8 +54,12 @@ defmodule UeberauthAzureAD.MixProject do
       {:json_web_token, "~> 0.2.5"},
       {:json, "~> 1.2"},
       {:secure_random, "~> 0.5"},
-      {:httpotion, "~> 3.1.0"},
-      {:ueberauth, "~> 0.5"}
+      {:httpoison, "~> 1.2"},
+      {:ueberauth, "~> 0.5"},
+
+      # tools
+      {:mock, "~> 0.3.0", only: :test},
+      {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
     ]
   end
 end
