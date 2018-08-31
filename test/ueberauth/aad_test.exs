@@ -16,7 +16,7 @@ defmodule Ueberauth.Strategy.AADTest do
       {
         "jwks_uri": "example_jwks_uri",
         "keys": [
-          {"x5t": "7_Zuf1tvkwLxYaHS3q6lUjUYIGw", "x5c": "[x5c_example]"}
+          {"x5t": "7_Zuf1tvkwLxYaHS3q6lUjUYIGw", "x5c": ["x5c_example"]}
         ]
       }
     )
@@ -36,15 +36,18 @@ defmodule Ueberauth.Strategy.AADTest do
       {OAuth2.Client, [:passthrough],
        [get_token: fn code, _ -> {:ok, %{token: %{access_token: code}}} end]},
       {Application, [:passthrough], [get_env: fn _, _ -> @env_values end]},
-      {HTTPoison, [:passthrough], [get!: fn _ -> @mock_http_reply end]},
-      {SecureRandom, [:passthrough], [uuid: fn -> "example_nonce" end]},
       {Ueberauth.Strategy.Helpers, [:passthrough],
        [
          callback_url: fn _ -> "https://test.com" end,
          options: fn _ -> [uid_field: "email"] end,
          redirect!: fn _conn, auth_url -> auth_url end,
          set_errors!: fn _conn, errors -> errors end
-       ]}
+       ]},
+      {HTTPoison, [:passthrough], [get!: fn _ -> @mock_http_reply end]},
+      {SecureRandom, [:passthrough], [uuid: fn -> "example_nonce" end]},
+      {:public_key, [:passthrough], [pem_decode: fn _ -> [nil] end]},
+      {:public_key, [:passthrough], [pem_entry_decode: fn _ ->
+        {0,{0, 1, 2, 3, 4, 5, 6, 7}} end]},
     ] do
       :ok
     end

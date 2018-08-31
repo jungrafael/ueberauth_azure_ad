@@ -5,11 +5,13 @@ defmodule Ueberauth.Strategy.AzureAD do
   use Ueberauth.Strategy
   alias Ueberauth.Strategy.AzureAD.Client
   alias Ueberauth.Strategy.AzureAD.Callback
+  require Logger
 
   def handle_request!(conn) do
     if Client.configured? do
-      url = Client.authorize_url!()
-      redirect!(conn, external: url)
+      callback_url = callback_url(conn)
+      url = Client.authorize_url!(callback_url)
+      redirect!(conn, url)
     else
       redirect!(conn, "/")
     end
@@ -25,7 +27,7 @@ defmodule Ueberauth.Strategy.AzureAD do
   end
 
   def handle_callback!(
-    %Plug.Conn{params: %{"id_token" => id_token, "code" => code}} = conn
+    %{params: %{"id_token" => id_token, "code" => code}} = conn
   ) do
     claims = Callback.process_callback!(id_token, code)
     put_private(conn, :aad_user, claims)
@@ -34,12 +36,13 @@ defmodule Ueberauth.Strategy.AzureAD do
   def handle_callback!(
         %Plug.Conn{params: %{"error" => error, "error_description" => error_description}} = conn
       ) do
+    raise error_description
     set_errors!(conn, [error(error, error_description)])
   end
 
   def handle_callback!(conn) do
-    IO.inspect conn
-    set_errors!(conn, [error("missing_code", "No code received")])
+    raise conn
+    set_errors!(conn, [error("missing_code_or_token", "Missing code or id_token")])
   end
 
   def handle_cleanup!(conn) do
@@ -60,15 +63,15 @@ defmodule Ueberauth.Strategy.AzureAD do
   end
 
   def credentials(conn) do
-    apply(conn.private.aad_handler, :credentials, [conn])
+    apply(conn.private.aad_user, :credentials, [conn])
   end
 
   def info(conn) do
-    apply(conn.private.aad_handler, :info, [conn])
+    apply(conn.private.aad_user, :info, [conn])
   end
 
   def extra(conn) do
-    apply(conn.private.aad_handler, :extra, [conn])
+    apply(conn.private.aad_user, :extra, [conn])
   end
 
   defp option(conn, key) do

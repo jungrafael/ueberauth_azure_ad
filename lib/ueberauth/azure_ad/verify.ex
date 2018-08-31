@@ -50,6 +50,6 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
   end
 
   defp config do
-    Application.get_env(:azure_ad_oauth, AzureADOauth)
+    Application.get_env(:ueberauth, Ueberauth.Strategy.AzureAD)
   end
 end

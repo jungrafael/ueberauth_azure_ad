@@ -13,7 +13,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
     "https://login.microsoftonline.com/#{tenant}/oauth2/logout?client_id=#{client_id}"
   end
 
-  def authorize_url!() do
+  def authorize_url!(callback_url) do
     oauth_session = SecureRandom.uuid
     
     params =
@@ -22,7 +22,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
       |> Map.update(:response_type, "code id_token", &(&1 * "code id_token"))
       |> Map.update(:nonce, oauth_session, &(&1 * oauth_session))
 
-    build_client()
+    build_client(callback_url)
     |> Client.authorize_url!(params)
   end
 
@@ -30,14 +30,13 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
     AuthCode.authorize_url(client, params)
   end
 
-  defp build_client() do
+  defp build_client(callback_url) do
   	configset = config()
-    redirect_uri = configset[:redirect_uri]
 
   	Client.new([
       strategy: __MODULE__,
       client_id: configset[:client_id],
-      redirect_uri: redirect_uri,
+      redirect_uri: callback_url,
       authorize_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/authorize",
       token_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/token"
     ])
@@ -48,7 +47,6 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
     configset != nil
     && Keyword.has_key?(configset, :tenant) 
     && Keyword.has_key?(configset, :client_id) 
-    && Keyword.has_key?(configset, :redirect_uri) 
   end 
 
   defp config do
