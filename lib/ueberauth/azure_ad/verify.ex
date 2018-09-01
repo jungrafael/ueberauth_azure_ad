@@ -23,10 +23,10 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
     hash_actual = :binary.part(hash_actual, 0, hash_length)
 
     # validate hash
-    hash_length >= 8 # normally 16
+    (hash_length >= 8) # normally 16
     |> Enforce.true!("Invalid c_hash - too short")
 
-    hash_actual == hash_expected
+    (hash_actual == hash_expected)
     |> Enforce.true!("Invalid c_hash - c_hash from id_token and code do not match")
 
     claims
@@ -38,20 +38,20 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
 
     Enforce.true!([
       # audience
-      configset[:client_id] == claims[:aud],
+      {configset[:client_id] == claims[:aud], "aud"},
 
       # tenant/issuer
-      configset[:tenant] == claims[:tid],
-      "https://sts.windows.net/#{configset[:tenant]}/" == claims[:iss],
+      {configset[:tenant] == claims[:tid], "tid"},
+      {"https://sts.windows.net/#{configset[:tenant]}/" == claims[:iss], "iss"},
 
       # time checks
-      now < claims[:exp],
-      now >= claims[:nbf],
-      now >= claims[:iat],
-      now <= claims[:iat] + 360 # issued less than 6 mins ago
+      {now < claims[:exp], "exp"},
+      {now >= claims[:nbf], "nbf"},
+      {now >= claims[:iat], "iat"},
+      {now <= claims[:iat] + 360, "iat"} # issued less than 6 mins ago
 
       # TODO check nonce
-    ], "Invalid claims")
+    ], "Invalid claim: ")
 
     # return claims
     claims

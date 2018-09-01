@@ -84,7 +84,7 @@ defmodule Ueberauth.Strategy.AzureAD do
       nickname: nickname,
       # it isn't in the documentation,
       # but I'm sure I've seen :phone in the claims before
-      phone: Map.get(claims, :phone),
+      phone: Map.get(claims, :phone)
     )
   end
 

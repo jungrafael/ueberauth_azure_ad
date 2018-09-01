@@ -7,8 +7,8 @@ defmodule Ueberauth.Strategy.AzureAD.Enforce do
   """
 
   def true!([], _), do: true
-  def true!([head | rest], error) do
-    true!(head, error)
+  def true!([{head, condition_name} | rest], error) do
+    true!(head, error <> condition_name)
     true!(rest, error)
   end
 
