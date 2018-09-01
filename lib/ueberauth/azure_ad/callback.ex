@@ -8,32 +8,27 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
 
   alias JsonWebToken.Algorithm.RsaUtil
   alias Ueberauth.Strategy.AzureAD.VerifyClaims
+  alias Ueberauth.Strategy.AzureAD.Enforce
 
   def process_callback!(id_token, code) do
-    x5t = get_x5t_from_token!(id_token)
-
-    public =
-      jwks_uri!()
-      |> get_discovery_keys!(x5t)
+    public_key =
+      id_token
+      |> get_x5t_from_token!
       |> get_public_key
-      |> RsaUtil.public_key
 
     opts = %{
       alg: "RS256",
-      key: public
+      key: public_key
     }
 
     id_token
     |> JsonWebToken.verify(opts)
-    |> enforce_ok!("JWT verification failed")
+    |> Enforce.ok!("JWT verification failed")
     |> VerifyClaims.verify!(code)
   end
 
-  defp enforce_ok!({:ok, value}, _), do: value
-  defp enforce_ok!(_, error), do: raise error
-
   defp get_x5t_from_token!(id_token) do
-    error = "failed to get x5t from token"
+    error = "Failed to get x5t from token - invalid response"
 
     id_token
     # get token header
@@ -41,32 +36,33 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
     |> List.first
     # decode
     |> Base.url_decode64(padding: false)
-    |> enforce_ok!(error)
+    |> Enforce.ok!(error)
     |> JSON.decode
-    |> enforce_ok!(error)
+    |> Enforce.ok!(error)
     # get x5t
     |> Map.get("x5t")
+  end
+
+  defp get_public_key(x5t) do
+    jwks_uri!()
+    |> get_discovery_keys!(x5t)
+    |> get_pubilc_key_from_cert
+    |> RsaUtil.public_key
   end
 
   defp jwks_uri! do
     "https://login.microsoftonline.com/common/.well-known/openid-configuration"
     |> http_request!
     |> JSON.decode
-    |> enforce_ok!("failed to retrieve jwks uri")
+    |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")
     |> Map.get("jwks_uri")
-  end
-
-  defp http_request!(url) do
-    %{status_code: 200, body: body} =
-      HTTPoison.get!(url)
-    body
   end
 
   defp get_discovery_keys!(url, x5t)do
     url
     |> http_request!
     |> JSON.decode
-    |> enforce_ok!("failed to retrieve discovery keys")
+    |> Enforce.ok!("Failed to retrieve discovery keys - invalid response")
     |> Map.get("keys")
     |> Enum.filter(fn(key) -> key["x5t"] === x5t end)
     |> List.first
@@ -74,7 +70,7 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
   end
 
   # always use the first x5t value
-  defp get_public_key([cert | _]) do
+  defp get_pubilc_key_from_cert([cert | _]) do
     spki =
       "-----BEGIN CERTIFICATE-----\n#{cert}\n-----END CERTIFICATE-----\n"
       |> :public_key.pem_decode
@@ -86,5 +82,16 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
     :public_key.pem_entry_encode(:SubjectPublicKeyInfo, spki)
     |> List.wrap
     |> :public_key.pem_encode
+  end
+
+  defp http_request!(url) do
+    case HTTPoison.get(url) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        body
+      {:ok, %HTTPoison.Response{status_code: code}} ->
+        raise "HTTP request error. Status Code: #{code} URL: #{url}"
+      {:error, error} ->
+        raise error
+    end
   end
 end
