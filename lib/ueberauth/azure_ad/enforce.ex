@@ -6,10 +6,19 @@ defmodule Ueberauth.Strategy.AzureAD.Enforce do
   Useful for enforcing claims validation and destructuring :ok atoms without breaking the pipe.
   """
 
-  def true!([true | rest], error), do: true!(rest, error)
-  def true!([true], _), do: true
-  def true!(true, _), do: true
-  def true!(_, error), do: raise error
+  def true!([], _), do: true
+  def true!([head | rest], error) do
+    true!(head, error)
+    true!(rest, error)
+  end
+
+  def true!(val, error) do
+    if val do
+      true
+    else
+      raise error
+    end
+  end
 
   def ok!({:ok, value}, _), do: value
   def ok!(_, error), do: raise error
