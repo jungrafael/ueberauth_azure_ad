@@ -76,6 +76,11 @@
     end
     ```
 
+## Credit
+This repository was used as a base for the AzureAD authentication.
+https://github.com/onurkucukkece/oauth_azure_activedirectory
+
 ## License
 
 Please see [LICENSE](https://github.com/whossname/ueberauth_azure_ad/blob/master/LICENSE.md) for licensing details.
+

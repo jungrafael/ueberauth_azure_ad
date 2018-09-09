@@ -4,6 +4,7 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
   """
 
   alias Ueberauth.Strategy.AzureAD.Enforce
+  alias Ueberauth.Strategy.AzureAD.NonceStore
 
   def verify!(claims, code) do
     claims
@@ -48,9 +49,10 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
       {now < claims[:exp], "exp"},
       {now >= claims[:nbf], "nbf"},
       {now >= claims[:iat], "iat"},
-      {now <= claims[:iat] + 360, "iat"} # issued less than 6 mins ago
+      {now <= claims[:iat] + 360, "iat"}, # issued less than 6 mins ago
 
-      # TODO check nonce
+      # nonce
+      {NonceStore.check_nonce(claims["nonce"]), "nonce"}
     ], "Invalid claim: ")
 
     # return claims

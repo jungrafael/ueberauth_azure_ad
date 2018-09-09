@@ -5,24 +5,25 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
 
   alias OAuth2.Client
   alias OAuth2.Strategy.AuthCode
+  alias Ueberauth.Strategy.AzureAD.NonceStore
+  @timeout 15 * 60 * 1000 # 15 minutes
 
   def logout_url() do
-  	configset = config()
+    configset = config()
     tenant = configset[:tenant]
     client_id = configset[:client_id]
     "https://login.microsoftonline.com/#{tenant}/oauth2/logout?client_id=#{client_id}"
   end
 
   def authorize_url!(callback_url) do
-    oauth_session = SecureRandom.uuid
-    
-    params =
-      %{}
-      |> Map.update(:response_mode, "form_post", &(&1 * "form_post"))
-      |> Map.update(:response_type, "code id_token", &(&1 * "code id_token"))
-      |> Map.update(:nonce, oauth_session, &(&1 * oauth_session))
+    params = %{
+        response_mode: "form_post",
+        response_type: "code id_token",
+        nonce: NonceStore.create_nonce(@timeout)
+      }
 
-    build_client(callback_url)
+    callback_url
+    |> build_client
     |> Client.authorize_url!(params)
   end
 
@@ -31,9 +32,9 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
   end
 
   defp build_client(callback_url) do
-  	configset = config()
+    configset = config()
 
-  	Client.new([
+    Client.new([
       strategy: __MODULE__,
       client_id: configset[:client_id],
       redirect_uri: callback_url,

@@ -60,6 +60,7 @@ defmodule UeberauthAzureAD.MixProject do
       # tools
       {:mock, "~> 0.3.0", only: :test},
       {:mix_test_watch, "~> 0.8", only: :dev, runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev},
     ]
   end
 end

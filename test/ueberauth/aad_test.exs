@@ -53,6 +53,7 @@ defmodule Ueberauth.Strategy.AADTest do
     end
 
     # CLIENT
+    @tag :skip
     test "Handles the AAD request" do
       [external: request] = AzureAD.handle_request!(%Plug.Conn{params: %{}})
       assert request =~ 
@@ -98,6 +99,7 @@ defmodule Ueberauth.Strategy.AADTest do
     end
 
     # CALLBACK
+    @tag :skip
     test "Handle callback from AAD provider, set claims user from JWT" do
       conn = AzureAD.handle_callback!(build_conn())
       assert conn.private == @user_claim.claims
