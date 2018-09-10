@@ -19,7 +19,7 @@ defmodule NonceStoreTest do
   end
 
   test "handle infinite timeout" do
-    nonce = NonceStore.create_nonce(:infinite)
+    nonce = NonceStore.create_nonce(:infinity)
     assert NonceStore.check_nonce(nonce)
   end
 end

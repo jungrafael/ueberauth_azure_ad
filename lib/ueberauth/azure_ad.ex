@@ -25,30 +25,30 @@ defmodule Ueberauth.Strategy.AzureAD do
     if Client.configured? do
       redirect!(conn, Client.logout_url())
     else
-      set_errors!(conn, [error("Logout Failed", "Failed to logout, please close your browser")])
+      error_msg = "Failed to logout, please close your browser"
+      set_errors!(conn, [error("Logout Failed", error_msg)])
     end
   end
 
-  def handle_callback!(
-    %{params: %{"id_token" => id_token, "code" => code}} = conn
-  ) do
+  def handle_callback!(conn) do
+    case Map.get(conn, :params) do
+      %{"id_token" => id_token, "code" => code} ->
+        handle_callback!(conn, id_token, code)
+      %{"error" => error, "error_description" => error_description} ->
+        set_errors!(conn, error(error, error_description))
+      _ ->
+        set_errors!(conn, error("missing_code_or_token", "Missing code or id_token"))
+    end
+  end
+
+  defp handle_callback!(conn, id_token, code) do
     try do
       claims = Callback.process_callback!(id_token, code)
       put_private(conn, :aad_user, claims)
     rescue
       e in RuntimeError -> 
-        set_errors!(conn, [error("failed_auth_callback", e.message)])
+        set_errors!(conn, error("failed_auth_callback", e.message))
     end
-  end
-
-  def handle_callback!(
-    %Plug.Conn{params: %{"error" => error, "error_description" => error_description}} = conn
-  ) do
-    set_errors!(conn, [error(error, error_description)])
-  end
-
-  def handle_callback!(conn) do
-    set_errors!(conn, [error("missing_code_or_token", "Missing code or id_token")])
   end
 
   def handle_cleanup!(conn) do

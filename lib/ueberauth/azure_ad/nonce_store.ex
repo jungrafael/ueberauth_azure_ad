@@ -13,7 +13,7 @@ defmodule Ueberauth.Strategy.AzureAD.NonceStore do
     :ets.insert(@tid, {nonce})
 
     # set cleanup task
-    if timeout != :infinte do
+    if(timeout != :infinity) do
       Task.start(fn () -> cleanup(nonce, timeout) end)
     end
     nonce
