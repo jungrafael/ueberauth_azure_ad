@@ -2,8 +2,8 @@ defmodule UeberauthAzureAD.MixProject do
   use Mix.Project
 
   @version "0.0.0"
-  @url "https://github.com/whossname/ueberauth_azure_ad"
-  @maintainers ["Tyson Buzza"]
+  @url "https://github.com/jungrafael/ueberauth_azure_ad"
+  @maintainers ["Rafael Jung"]
 
   def project do
     [
@@ -13,7 +13,7 @@ defmodule UeberauthAzureAD.MixProject do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      name: "Ueberauth Azure Active Directory",
+      name: "Ueberauth Azure Active Directory B2C",
       description: "Azure Active Directory Strategy for Überauth",
       source_url: @url,
       homepage_url: @url,

@@ -17,10 +17,12 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
 
   def authorize_url!(callback_url) do
     params = %{
-        response_mode: "form_post",
-        response_type: "code id_token",
-        nonce: NonceStore.create_nonce(@timeout)
-      }
+      p: "B2C_1_Customer1_SigUpOrSigIn",
+      scope: "openid",
+      prompt: "login",
+      response_type: "code id_token",
+      nonce: NonceStore.create_nonce(@timeout)
+    }
 
     callback_url
     |> build_client
@@ -38,17 +40,17 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
       strategy: __MODULE__,
       client_id: configset[:client_id],
       redirect_uri: callback_url,
-      authorize_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/authorize",
-      token_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/token"
+      authorize_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/v2.0/authorize",
+      token_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/v2.0/token"
     ])
   end
 
-  def configured? do 
-    configset = config() 
+  def configured? do
+    configset = config()
     configset != nil
-    && Keyword.has_key?(configset, :tenant) 
-    && Keyword.has_key?(configset, :client_id) 
-  end 
+    && Keyword.has_key?(configset, :tenant)
+    && Keyword.has_key?(configset, :client_id)
+  end
 
   defp config do
     Application.get_env(:ueberauth, Ueberauth.Strategy.AzureAD)
