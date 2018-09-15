@@ -16,6 +16,7 @@ defmodule Ueberauth.Strategy.AzureAD.NonceStore do
     if(timeout != :infinity) do
       Task.start(fn () -> cleanup(nonce, timeout) end)
     end
+
     nonce
   end
 

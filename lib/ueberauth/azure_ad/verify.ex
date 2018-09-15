@@ -6,6 +6,8 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
   alias Ueberauth.Strategy.AzureAD.Enforce
   alias Ueberauth.Strategy.AzureAD.NonceStore
 
+  @iat_timeout 360 # 6 minutes
+
   def verify!(claims, code) do
     claims
     |> verify_chash!(code)
@@ -49,7 +51,7 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
       {now < claims[:exp], "exp"},
       {now >= claims[:nbf], "nbf"},
       {now >= claims[:iat], "iat"},
-      {now <= claims[:iat] + 360, "iat"}, # issued less than 6 mins ago
+      {now <= claims[:iat] + @iat_timeout, "iat"},
 
       # nonce
       {NonceStore.check_nonce(claims[:nonce]), "nonce"}

@@ -10,6 +10,28 @@
 
 > An Azure Active Directory strategy for Überauth.
 
+## Introduction
+This is a simple and opinionated strategy where the following decisions have been made:
+- response mode - "form_post"
+- response type - "code id_token"
+- nonce timeout - 15 minutes
+- iat timeout - 6 minutes
+- The client secret is not used, so this library can't be used for authorization
+
+On top of this the library includes client side validations for the following claims:
+- c_hash
+- aud
+- tid
+- iss
+- nbf
+- iat
+- exp
+- nonce
+
+Nonces are stored in ets with the NonceStore module as the key.
+
+If you need a more flexible implementation check out https://github.com/swelham/ueberauth_microsoft
+
 ## Installation
 
 1. Add `:ueberauth_azure_ad` to your list of dependencies in `mix.exs`:
