@@ -111,8 +111,10 @@ defmodule Ueberauth.Strategy.AADTest do
         }
     end
 
-    @tag :skip
     test "Handle cleanup of the private vars in the conn" do
+      conn = %Plug.Conn{private: %{aad_user: :not_nil}}
+      conn = AzureAD.handle_cleanup!(conn)
+      assert conn.private.aad_user == nil
     end
   end
 end

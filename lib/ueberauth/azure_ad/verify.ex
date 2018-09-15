@@ -52,7 +52,7 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
       {now <= claims[:iat] + 360, "iat"}, # issued less than 6 mins ago
 
       # nonce
-      {NonceStore.check_nonce(claims["nonce"]), "nonce"}
+      {NonceStore.check_nonce(claims[:nonce]), "nonce"}
     ], "Invalid claim: ")
 
     # return claims
