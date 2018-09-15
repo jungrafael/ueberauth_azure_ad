@@ -20,6 +20,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
       p: "B2C_1_Customer1_SigUpOrSigIn",
       scope: "openid",
       prompt: "login",
+      response_mode: "query",
       response_type: "code id_token",
       nonce: NonceStore.create_nonce(@timeout)
     }
