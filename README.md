@@ -1,7 +1,7 @@
 # Überauth Azure Active Directory
 [![Build Status][travis-img]][travis] [![Hex Version][hex-img]][hex] [![License][license-img]][license]
 
-[travis-img]: https://travis-ci.org/whossname/ueberauth_identity.svg?branch=master
+[travis-img]: https://travis-ci.org/whossname/ueberauth_azure_ad.svg?branch=master
 [travis]: https://travis-ci.org/whossname/ueberauth_azure_ad
 [hex-img]: https://img.shields.io/hexpm/v/ueberauth_azure_ad.svg
 [hex]: https://hex.pm/packages/ueberauth_azure_ad
