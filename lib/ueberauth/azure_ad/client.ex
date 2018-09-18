@@ -11,8 +11,12 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
   def logout_url() do
     configset = config()
     tenant = configset[:tenant]
+    tenant_name = configset[:tenant]
+    |> String.split(".")
+    |> List.first
+
     client_id = configset[:client_id]
-    "https://login.microsoftonline.com/#{tenant}/oauth2/logout?client_id=#{client_id}"
+    "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/oauth2/v2.0/logout?client_id=#{client_id}"
   end
 
   def authorize_url!(callback_url) do
@@ -22,7 +26,8 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
       prompt: "login",
       response_mode: "query",
       response_type: "code id_token",
-      nonce: NonceStore.create_nonce(@timeout)
+      #nonce: NonceStore.create_nonce(@timeout)
+      nonce: "defaultNonce"
     }
 
     callback_url
@@ -37,12 +42,16 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
   defp build_client(callback_url) do
     configset = config()
 
+    tenant_name = configset[:tenant]
+    |> String.split(".")
+    |> List.first
+
     Client.new([
       strategy: __MODULE__,
       client_id: configset[:client_id],
       redirect_uri: callback_url,
-      authorize_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/v2.0/authorize",
-      token_url: "https://login.microsoftonline.com/#{configset[:tenant]}/oauth2/v2.0/token"
+      authorize_url: "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/oauth2/v2.0/authorize",
+      token_url: "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/oauth2/v2.0/token"
     ])
   end
 

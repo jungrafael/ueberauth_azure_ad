@@ -39,13 +39,23 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
     configset = config()
     now = :os.system_time(:second)
 
+    tenant_name = configset[:tenant]
+    |> String.split(".")
+    |> List.first
+
+    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=b2c_1_sign-in_sign-up"
+    |> http_request!
+    |> JSON.decode
+    |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")
+    |> Map.get("issuer")
+
     Enforce.true!([
       # audience
       {configset[:client_id] == claims[:aud], "aud"},
 
       # tenant/issuer
-      {configset[:tenant] == claims[:tid], "tid"},
-      {"https://sts.windows.net/#{configset[:tenant]}/" == claims[:iss], "iss"},
+      #{configset[:tenant] == claims[:tid], "tid"},
+      {issuer == claims[:iss], "iss"},
 
       # time checks
       {now < claims[:exp], "exp"},
@@ -54,11 +64,23 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
       {now <= claims[:iat] + @iat_timeout, "iat"},
 
       # nonce
-      {NonceStore.check_nonce(claims[:nonce]), "nonce"}
+      #{NonceStore.check_nonce(claims[:nonce]), "nonce"}
+      {"defaultNonce" == claims[:nonce], "nonce"}
     ], "Invalid claim: ")
 
     # return claims
     claims
+  end
+
+  def http_request!(url) do
+    case HTTPoison.get(url) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        body
+      {:ok, %HTTPoison.Response{status_code: code}} ->
+        raise "HTTP request error. Status Code: #{code} URL: #{url}"
+      {:error, error} ->
+        raise error
+    end
   end
 
   defp config do
