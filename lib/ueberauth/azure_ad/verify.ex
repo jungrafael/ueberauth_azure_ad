@@ -43,7 +43,7 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
     |> String.split(".")
     |> List.first
 
-    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=b2c_1_sign-in_sign-up"
+    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=b2c_1_customer1_siguporsigin"
     |> http_request!
     |> JSON.decode
     |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")

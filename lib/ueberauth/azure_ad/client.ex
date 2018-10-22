@@ -21,7 +21,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
 
   def authorize_url!(callback_url) do
     params = %{
-      p: "B2C_1_Customer1_SigUpOrSigIn",
+      p: "b2c_1_customer1_siguporsigin",
       scope: "openid",
       prompt: "login",
       response_mode: "query",
