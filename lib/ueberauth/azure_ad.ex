@@ -46,7 +46,7 @@ defmodule Ueberauth.Strategy.AzureAD do
       claims = Callback.process_callback!(id_token, code)
       put_private(conn, :aad_user, claims)
     rescue
-      e in RuntimeError -> 
+      e in RuntimeError ->
         set_errors!(conn, error("failed_auth_callback", e.message))
     end
   end
@@ -62,11 +62,14 @@ defmodule Ueberauth.Strategy.AzureAD do
   end
 
   def credentials(conn) do
+    claims = conn.private.aad_user
+
     struct(
       Credentials,
       other: %{
         id_token: conn.params["id_token"],
         code: conn.params["code"],
+        oid: Map.get(claims, :oid),
       }
     )
   end
@@ -74,7 +77,7 @@ defmodule Ueberauth.Strategy.AzureAD do
   def info(conn) do
     claims = conn.private.aad_user
     nickname = get_name(conn.private.aad_user)
-    
+
     struct(
       Info,
       email: Map.get(claims, :email),
