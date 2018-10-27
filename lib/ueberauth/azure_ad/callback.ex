@@ -11,6 +11,12 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
   alias Ueberauth.Strategy.AzureAD.Enforce
 
   def process_callback!(id_token, code) do
+    id_token
+    |> get_claims_from_id_token
+    |> VerifyClaims.verify!(code)
+  end
+
+  def get_claims_from_id_token(id_token) do
     public_key = id_token |> get_public_key_from_id_token
 
     opts = %{
@@ -18,13 +24,12 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
       key: public_key
     }
 
-    claims = id_token
+    id_token
     |> JsonWebToken.verify(opts)
     |> Enforce.ok!("JWT verification failed")
-    |> VerifyClaims.verify!(code)
   end
 
-  def get_public_key_from_id_token(id_token) do
+  defp get_public_key_from_id_token(id_token) do
     id_token
     |> get_kid_from_token!
     |> get_public_key

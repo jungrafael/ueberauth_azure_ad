@@ -69,7 +69,7 @@ defmodule Ueberauth.Strategy.AzureAD do
       other: %{
         id_token: conn.params["id_token"],
         code: conn.params["code"],
-        oid: Map.get(claims, :oid),
+        claims: claims,
       }
     )
   end
@@ -80,14 +80,11 @@ defmodule Ueberauth.Strategy.AzureAD do
 
     struct(
       Info,
-      email: Map.get(claims, :email),
+      email: Map.get(claims, :emails) |> List.first,
       name: Map.get(claims, :name),
       first_name: Map.get(claims, :given_name),
       last_name: Map.get(claims, :family_name),
       nickname: nickname,
-      # it isn't in the documentation,
-      # but I'm sure I've seen :phone in the claims before
-      phone: Map.get(claims, :phone)
     )
   end
 
