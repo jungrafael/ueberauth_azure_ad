@@ -84,23 +84,11 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
 
   # always use the first kid value
   defp get_public_key_from_cert(cert_data) do
-    #spki =
-    #  "-----BEGIN CERTIFICATE-----\n#{cert}\n-----END CERTIFICATE-----\n"
-    #  |> :public_key.pem_decode
-    #  |> hd
-    #  |> :public_key.pem_entry_decode
-    #  |> elem(1)
-    #  |> elem(7)
-
-    #:public_key.pem_entry_encode(:SubjectPublicKeyInfo, spki)
-    #|> List.wrap
-    #|> :public_key.pem_encode
-
-    case System.cmd("node", ["pemFromModExpo.js", cert_data["n"], cert_data["e"]], cd: Path.dirname(__ENV__.file)) do
+    case System.cmd("node", ["pemFromModExpo.js", cert_data["n"], cert_data["e"]], cd: :code.priv_dir(:ueberauth_azure_ad) |> List.to_string) do
       {output, 0} -> {:ok, output}
       _           -> :error
     end
-    |> Enforce.ok!("Failed to retrieve discovery keys - invalid response")
+    |> Enforce.ok!("Failed to retrieve public key - invalid response")
   end
 
   defp http_request!(url) do
