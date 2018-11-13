@@ -10,6 +10,8 @@ defmodule UeberauthAzureAD.MixProject do
       app: :ueberauth_azure_ad,
       version: @version,
       elixir: "~> 1.6",
+      elixirc_paths: elixirc_paths(Mix.env),
+      compilers: Mix.compilers() ++ [:npm],
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -22,6 +24,8 @@ defmodule UeberauthAzureAD.MixProject do
       docs: docs()
     ]
   end
+
+  defp elixirc_paths(_),     do: ["lib", "node_modules"]
 
   def package do
     [
@@ -43,7 +47,8 @@ defmodule UeberauthAzureAD.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :ueberauth, :oauth2]
+      extra_applications: [:logger, :ueberauth, :oauth2],
+      mod: {UeberauthAzureAD, []}
     ]
   end
 

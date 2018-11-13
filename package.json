@@ -1,0 +1,6 @@
+{
+    "name": "ueberauth_azure_ad",
+    "dependencies": {
+        "rsa-pem-from-mod-exp": "^0.8.4"
+    }
+}
