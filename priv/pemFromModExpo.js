@@ -1,4 +1,4 @@
-var getPem = require('rsa-pem-from-mod-exp');
+var getPem = require('./node_modules/rsa-pem-from-mod-exp');
 
 const modulus = process.argv[2];
 const exponent = process.argv[3];

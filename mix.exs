@@ -47,8 +47,7 @@ defmodule UeberauthAzureAD.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :ueberauth, :oauth2],
-      mod: {UeberauthAzureAD, []}
+      extra_applications: [:logger, :ueberauth, :oauth2]
     ]
   end
 
