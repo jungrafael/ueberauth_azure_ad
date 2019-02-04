@@ -3,7 +3,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
   Oauth2 client for Azure Active Directory.
   """
 
-  alias OAuth2.Client
+  alias OAuth2.Client, as: OAuth2Client
   alias OAuth2.Strategy.AuthCode
   alias Ueberauth.Strategy.AzureAD.NonceStore
   @timeout 15 * 60 * 1000 # 15 minutes
@@ -19,11 +19,11 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
     "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/oauth2/v2.0/logout?client_id=#{client_id}"
   end
 
-  def authorize_url!(callback_url) do
+  def forgot_password_url!(callback_url) do
     configset = config()
 
-    params = %{
-      p: configset[:p],
+    %{
+      p: configset[:forgot_password_p],
       scope: "openid",
       prompt: "login",
       response_mode: "query",
@@ -31,10 +31,28 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
       #nonce: NonceStore.create_nonce(@timeout)
       nonce: "defaultNonce"
     }
+    |> generate_url!(callback_url)
+  end
 
+  def authorize_url!(callback_url) do
+    configset = config()
+
+    %{
+      p: configset[:authorization_p],
+      scope: "openid",
+      prompt: "login",
+      response_mode: "query",
+      response_type: "code id_token",
+      #nonce: NonceStore.create_nonce(@timeout)
+      nonce: "defaultNonce"
+    }
+    |> generate_url!(callback_url)
+  end
+
+  def generate_url!(params, callback_url) do
     callback_url
     |> build_client
-    |> Client.authorize_url!(params)
+    |> OAuth2Client.authorize_url!(params)
   end
 
   def authorize_url(client, params) do
@@ -48,7 +66,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
     |> String.split(".")
     |> List.first
 
-    Client.new([
+    OAuth2Client.new([
       strategy: __MODULE__,
       client_id: configset[:client_id],
       redirect_uri: callback_url,

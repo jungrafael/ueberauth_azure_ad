@@ -37,18 +37,18 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
 
   defp validate_claims!(claims) do
     configset = config()
-    now = :os.system_time(:second)
 
     tenant_name = configset[:tenant]
     |> String.split(".")
     |> List.first
 
-    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=#{configset[:p]}"
+    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=#{configset[:authorization_p]}"
     |> http_request!
     |> JSON.decode
     |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")
     |> Map.get("issuer")
 
+    now = :os.system_time(:second)
     Enforce.true!([
       # audience
       {configset[:client_id] == claims[:aud], "aud"},
