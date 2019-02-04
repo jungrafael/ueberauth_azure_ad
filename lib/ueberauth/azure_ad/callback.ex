@@ -65,7 +65,7 @@ defmodule Ueberauth.Strategy.AzureAD.Callback do
     |> String.split(".")
     |> List.first
 
-    "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=b2c_1_sign-in_sign-up"
+    "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=#{configset[:p]}"
     |> http_request!
     |> JSON.decode
     |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")

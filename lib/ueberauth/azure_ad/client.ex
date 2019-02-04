@@ -10,7 +10,7 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
 
   def logout_url() do
     configset = config()
-    tenant = configset[:tenant]
+
     tenant_name = configset[:tenant]
     |> String.split(".")
     |> List.first
@@ -20,8 +20,10 @@ defmodule Ueberauth.Strategy.AzureAD.Client do
   end
 
   def authorize_url!(callback_url) do
+    configset = config()
+
     params = %{
-      p: "B2C_1_SIGN-IN_SIGN-UP",
+      p: configset[:p],
       scope: "openid",
       prompt: "login",
       response_mode: "query",
