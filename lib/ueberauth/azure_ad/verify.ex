@@ -11,7 +11,7 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
   def verify!(claims, code) do
     claims
     |> verify_chash!(code)
-    |> validate_claims!
+    |> validate_claims!()
   end
 
   defp verify_chash!(claims, code) do
@@ -42,13 +42,15 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
     |> String.split(".")
     |> List.first
 
-    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=#{configset[:authorization_p]}"
+    tfp = Map.get(claims, :tfp)
+    issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=#{tfp}"
     |> http_request!
     |> JSON.decode
     |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")
     |> Map.get("issuer")
 
     now = :os.system_time(:second)
+
     Enforce.true!([
       # audience
       {configset[:client_id] == claims[:aud], "aud"},
