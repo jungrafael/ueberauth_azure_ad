@@ -42,8 +42,8 @@ defmodule Ueberauth.Strategy.AzureAD do
         redirect!(conn, Client.forgot_password_url!(callback_url))
       %{"error" => error, "error_description" => error_description} ->
         set_errors!(conn, error(error, error_description))
-      _ ->
-        set_errors!(conn, error("missing_code_or_token", "Missing code or id_token"))
+      %{} ->
+        redirect!(conn, "/")
     end
   end
 

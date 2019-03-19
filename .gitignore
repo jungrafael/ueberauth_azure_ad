@@ -26,3 +26,4 @@ erl_crash.dump
 ueberauth_adfs-*.tar
 
 /.elixir_ls/
+/priv/node_modules/

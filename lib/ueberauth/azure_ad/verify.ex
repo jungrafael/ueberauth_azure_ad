@@ -45,7 +45,7 @@ defmodule Ueberauth.Strategy.AzureAD.VerifyClaims do
     tfp = Map.get(claims, :tfp)
     issuer = "https://#{tenant_name}.b2clogin.com/#{configset[:tenant]}/v2.0/.well-known/openid-configuration?p=#{tfp}"
     |> http_request!
-    |> JSON.decode
+    |> Jason.decode
     |> Enforce.ok!("Failed to retrieve jwks uri - invalid response")
     |> Map.get("issuer")
 

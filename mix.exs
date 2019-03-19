@@ -56,7 +56,7 @@ defmodule UeberauthAzureAD.MixProject do
     [
       {:oauth2, "~> 0.9.2"},
       {:json_web_token, "~> 0.2.5"},
-      {:json, "~> 1.2"},
+      {:jason, "~> 1.1"},
       {:secure_random, "~> 0.5"},
       {:httpoison, "~> 1.2"},
       {:ueberauth, "~> 0.5"},
