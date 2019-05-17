@@ -34,14 +34,22 @@ defmodule Ueberauth.Strategy.AzureAD do
     case Map.get(conn, :params) do
       %{"id_token" => id_token, "code" => code} ->
         handle_callback!(conn, id_token, code)
+
       %{"error" => _error, "error_description" => "AADB2C90091: " <> _error_description} ->
         callback_url = callback_url(conn)
         redirect!(conn, Client.authorize_url!(callback_url))
+
       %{"error" => _error, "error_description" => "AADB2C90118: " <> _error_description} ->
         callback_url = callback_url(conn)
         redirect!(conn, Client.forgot_password_url!(callback_url))
+
+      %{"error" => _error, "error_description" => "AADB2C90151: " <> _error_description} ->
+        callback_url = callback_url(conn)
+        redirect!(conn, Client.authorize_url!(callback_url))
+
       %{"error" => error, "error_description" => error_description} ->
         set_errors!(conn, error(error, error_description))
+
       %{} ->
         redirect!(conn, "/")
     end
